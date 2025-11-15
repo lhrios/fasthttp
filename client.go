@@ -1569,11 +1569,13 @@ func (c *HostClient) AcquireConn(reqTimeout time.Duration, connectionClose bool)
 			cc = c.conns[n]
 			c.conns[n] = nil
 			c.conns = c.conns[:n]
+			panic("Shouldn't be used")
 		case FIFO:
 			cc = c.conns[0]
 			copy(c.conns, c.conns[1:])
 			c.conns[n-1] = nil
 			c.conns = c.conns[:n-1]
+			panic("Shouldn't be used")
 		case RANDOM:
 			index := rand.IntN(n)
 			cc = c.conns[index]
