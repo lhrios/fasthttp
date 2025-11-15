@@ -1825,26 +1825,28 @@ func (c *HostClient) ReleaseConn(cc *clientConn) {
 	c.connsLock.Lock()
 	defer c.connsLock.Unlock()
 	delivered := false
-	if q := c.connsWait; q != nil && q.len() > 0 {
-		for q.len() > 0 {
-			w := q.popFront()
-			if w.waiting() {
-				delivered = w.tryDeliver(cc, nil)
-				// This is the last resort to hand over conCount sema.
-				// We must ensure that there are no valid waiters in connsWait
-				// when we exit this loop.
-				//
-				// We did not apply the same looping pattern in the decConnsCount
-				// method because it needs to create a new time-spent connection,
-				// and the decConnsCount call chain will inevitably reach this point.
-				// When MaxConnWaitTimeout>0.
-				if delivered {
-					break
+	/*
+		if q := c.connsWait; q != nil && q.len() > 0 {
+			for q.len() > 0 {
+				w := q.popFront()
+				if w.waiting() {
+					delivered = w.tryDeliver(cc, nil)
+					// This is the last resort to hand over conCount sema.
+					// We must ensure that there are no valid waiters in connsWait
+					// when we exit this loop.
+					//
+					// We did not apply the same looping pattern in the decConnsCount
+					// method because it needs to create a new time-spent connection,
+					// and the decConnsCount call chain will inevitably reach this point.
+					// When MaxConnWaitTimeout>0.
+					if delivered {
+						break
+					}
 				}
+				c.connsWait.failedWaiters.Add(-1)
 			}
-			c.connsWait.failedWaiters.Add(-1)
 		}
-	}
+	*/
 	if !delivered {
 		c.conns = append(c.conns, cc)
 	}
