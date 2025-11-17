@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math/rand/v2"
 	"net"
 	"strings"
 	"sync"
@@ -704,6 +705,7 @@ type ConnPoolStrategyType int
 const (
 	FIFO ConnPoolStrategyType = iota
 	LIFO
+	RANDOM
 )
 
 // HostClient balances http requests among hosts listed in Addr.
@@ -1572,6 +1574,13 @@ func (c *HostClient) AcquireConn(reqTimeout time.Duration, connectionClose bool)
 			copy(c.conns, c.conns[1:])
 			c.conns[n-1] = nil
 			c.conns = c.conns[:n-1]
+		case RANDOM:
+			i := rand.IntN(n)
+			cc = c.conns[i]
+			n--
+			c.conns[i] = c.conns[n]
+			c.conns[n] = nil
+			c.conns = c.conns[:n]
 		default:
 			c.connsLock.Unlock()
 			return nil, ErrConnPoolStrategyNotImpl
